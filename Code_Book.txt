@@ -1,0 +1,40 @@
+This file contains the code book for the Getting and Cleaning Data Class Project.  
+The source data files and their contents are described in the Readme.Txt file in this repository.
+The following steps were taken to create the tidy_data.txt file containing the cleaned data. 
+The script to clean and consolidate the data is called run_analysis.R
+Before creating the script, I created a repository on Github (with a local replica) call getting_cleaning_data
+The script follows these steps:
+Step 1
+The script verifies that the working directly is set correctly to c:/Users/Randall Bogart/OneDrive/R_Studio/getting_cleaning_data
+Then, it tests for the presence of the plyr package in the working environment.  If the package is not present, it installs the package, then loads
+and activates the package using the library() function
+Step 2
+The tables containing the feature names and activity descriptions are loaded
+features <- read.table('features.txt', header = FALSE
+labels <- read.table('activity_labels.txt', header = FALSE)
+The header is set to false in both instances because there is no header line
+Step 3
+The training information is read into the X_Train and Y_train data frames using the read.table() function, since there are no headers, this is also labeled as FALSE
+The subject column is read into the subject_train data frame using the read.table() function
+Step 4
+The training information is read into the X_test and Y_test data frames using the read.table() function, since there are no headers, this is also labeled as FALSE
+The subject column is read into the subject_test data frame using the read.table() function
+Step 5
+The correct variable names are assigned to the tables before consolidating the data
+column names for X_train and Y_test are set to match the corresponding names in the features data frame
+The first column in Y_Train and Y_test is named "activityID"
+The first column in subject_train and subject test is named "subjectID"
+The column names in the labels activity lookup data frame are named "activityID" and activityType"
+Step 6
+The Y_Test data frame is updated to include a column with the "activityType".
+The Y_train data frame is updated to include a column with the "activityType".
+A training data frame is created using the cbind() function, linking Y_train, subject_train, and X_train
+A test data frame is created using the cbind() function, linking Y_test, subject_test, and X_test
+Using rbind (), a combined data frame is created so that all rows from training_data and test_data are consolidated into a single file. 
+The column names are captured into a vector named column Names
+A data frame contain activityType, subjectID, mean and standard deviation is created
+A final data set is then created by only reading in those rows with mean and standard deviation populated
+Step 7
+A tidy_data data frame is created by aggregated the subject ID, activity type, and mean
+Final data cleansing for column headers is complete, capitalizating Mean and Std and removing -
+The tidy_data set is then written to the tidy_data.t
