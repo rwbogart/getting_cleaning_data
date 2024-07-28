@@ -10,8 +10,8 @@ if(!require("plyr")) {
 library(plyr)
 
 #Read the features and label information
-features <- read.table('features.txt', header = FALSE)[,2]
-labels <- read.table('activity_labels.txt', header = FALSE)[,2]
+features <- read.table('features.txt', header = FALSE)
+labels <- read.table('activity_labels.txt', header = FALSE)
 
 #Read the training information
 X_train <- read.table('./train/X_train.txt', header = FALSE)
@@ -23,32 +23,39 @@ X_test <- read.table('./test/X_test.txt', header = FALSE)
 Y_test <- read.table('./test/Y_test.txt', header = FALSE)
 subject_test <- read.table('./test/subject_test.txt', header = FALSE)
 
+#Assigning Variable Names
+colnames(X_train) <- features[,2]
+colnames(X_test) <- features[,2]
+colnames(Y_train) <- "activityID"
+colnames(Y_test) <- "activityID"
+colnames(subject_train) <- "subjectID"
+colnames(subject_test) <- "subjectID"
+colnames(labels) <- c("activityID", "activityType")
+
 #Merge into 3 data sets
-x_data <- rbind(X_train, X_test)
-y_data <- rbind(Y_train, Y_test)
-subjectdata <- rbind(subject_train, subject_test)
+Y_test <- merge(Y_test, labels)
+Y_train <- merge(Y_train, labels)
+training_data <- cbind(Y_train, subject_train, X_train)
+test_data <- cbind(Y_test, subject_test, X_test)
+combined_data <- rbind(training_data, test_data)
 
-#Extract the measurements of the mean and the standard deviation for each measurement
-extractfeaturemean <- grep("-(mean|std)\\(\\)", features)
-x_data <- x_data[, extractfeaturemean]
+#Extract measurements for the mean and standard deviation for each measurement
 
-#Appropriately label the data set with descriptive variable names (y_data has a single column, use lower case)
-y_data[, 1] <- labels[y_data[,1]
-names(y_data) <- "activity"
-names(subjectdata) <- "subject"
-names(x_data) <- features[extractfeaturemean]
+#Get Column Names
+columnNames <- colnames(combined_data)
 
-#Create the second combined set of data
-combined_data <- cbind(x_data, y_data, subjectdata)
-combined_data <- combined_data[c(68,67, 1:66)]
+#Get vector for ID, mean, and standard deviation
+mean_and_stdev <- (grepl("activityType", columnNames) | grepl("subjectID", columnNames) | grepl("mean..", columnNames) | grepl("std...", columnNames))
 
-#Create final tidy data set with averages of columns grouped by activity and subject
-tidy_data <- ddply(combined_data, .(subject, activity), function(x) colMeans(x[,3:68]))
+#Get the final subset
+finalsubset <- combined_data[,mean_and_stdev == TRUE]
 
-#Clean names and prepare for posting file
+
+#create tidy data set and do final clean up
+tidy_data <- aggregate(.~subjectID + activityType, finalsubset, mean)
 names(tidy_data) <- gsub('-mean', 'Mean', names(tidy_data))
 names(tidy_data) <- gsub('-std', 'Std', names(tidy_data))
 names(tidy_data) <- gsub('()-]','',names(tidy_data))
-names(tidy_data) <- gsub('BodyBody', 'Body', names(tidy_data))
+
 write.table(tidy_data, "tidy_data.txt", row.name = FALSE)
 
